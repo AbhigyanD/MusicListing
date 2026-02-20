@@ -1,240 +1,163 @@
-# Music Artist and Event Management System
+# Moments — TikTok-Style Music Discovery
 
-## New product: Feed-first music discovery (TikTok-style)
+A full-screen, vertical-feed music app where every swipe is a new song. Built with **React + TypeScript + Vite** on the frontend and a **Node/Express** API that pulls tracks from **Spotify** with 30-second audio previews via **iTunes**.
 
-A **new UI/product** lives in **`web-app/`**: a vertical, full-screen feed of “music moments” (one song/moment per swipe), built with **React, TypeScript, and Vite**. It’s designed to feel like Vine → YouTube → TikTok, but **music-first**: no search bar, feed is the product, and it **plays music** when you connect audio URLs.
-
-- **Run the new app:** `cd web-app && npm install && npm run dev` → [http://localhost:5173](http://localhost:5173)
-- **Product and tech direction:** see [**PRODUCT_VISION.md**](PRODUCT_VISION.md)
-- **Tech:** React 18, TypeScript, Vite, Tailwind. Optional backend: keep Java (e.g. Spring Boot) or add Node/Go; web app consumes a “moments” API.
-
-The rest of this README describes the **original** Java/Swing system (artist search, events, comments, Firebase).
+**One-line pitch:** *Swipe through moments, not playlists. One hook, one vibe, one tap to play.*
 
 ---
 
-## Overview
+## Demo
 
-The **Music Artist and Event Management System** is a Java-based software project designed to manage music artist information, events, and user interactions. It incorporates clean architecture, follows SOLID design principles, and integrates real-time data from external APIs. This project provides a robust framework for managing artist-related data and event search while ensuring user-centric functionality.
-
-
----
-
-## Table of Contents
-
-1. [Summary of the Project’s Purpose](#summary-of-the-projects-purpose)
-2. [Features](#features)
-2. [Installation](#installation-instructions)
-3. [Usage](#usage)
-4. [Architecture](#clean-architecture-implementation)
-5. [License](#license)
-6. [Feedback and Contributions](#feedback-and-contribution)
+Open the app and you land in the feed. Each card is a "moment" — album art, track name, artist, and a looping 30-second preview that auto-plays as you scroll. Search any song or artist from the header. Tap anywhere to pause. Hit the green button to play the full track on Spotify.
 
 ---
-## Summary of the Project’s Purpose
-
-### What This Project Does
-The **Music Artist and Event Explorer** application provides users with an interactive platform to:
-- **Create an account** and securely log in.
-- **Search for artists** and view their top songs, detailed information, and public ratings.
-- **Write and view comments** and rate artists, contributing to an average score that dynamically updates.
-- **Search for events**, allowing users to explore music-related happenings.
-
-### Why the Project Was Made
-This application was developed to:
-- **Simplify music exploration** by combining artist and event search capabilities in one app.
-- **Provide a platform for user interaction**, enabling music lovers to share opinions, rate artists, and discover community insights.
-- **Apply practical software development concepts**, including clean architecture and user-centric design, as part of the **CSC207 Software Design course.**
-
-### What Problem This Project Solves
-The project addresses the need for:
-- A **centralized platform** for discovering and interacting with music artists and events.
-- An **interactive community-driven system** where users can provide and access real-time feedback about artists.
-- **Streamlined event exploration**, making it easy for users to connect with music-related events in their area.
-
-### Accessibility Report
-This application is beneficial for:
-- **Music enthusiasts** seeking detailed artist insights and community opinions.
-- **Casual users** looking for a quick way to explore popular artists and events.
-- **Developers and learners** exploring the integration of clean architecture, dynamic data updates, and user interface design principles in a functional app.
-
 
 ## Features
 
-### User Account Management
-- **Create Account**: Users can easily create a new account with secure credentials.
-- **Login System**: Existing users can log in to access personalized features and interact with the app.
-![img_1.png](img_1.png)
-### Artist Search and Exploration
-- **Artist Listings**: Search for artists by name and explore their information.
-- **Dynamic Song Information**: View a curated list of the artist’s top songs, with details including song titles and length.
-- **Rating System**: Users can rate artists on a scale and leave personalized comments.
-- **Community Feedback**: View other users' comments and ratings in a dedicated section.
-- **Average Rating Updates**: The average score dynamically updates with every new user rating.
-- **Persistent Storage**: Comments and ratings entered by users are securely stored in a Firebase database and are displayed on the artist detail page.
-![img_2.png](img_2.png) ![img_3.png](img_3.png)
-### Event Search
-- **Event Listings**: Search for music-related events .
-![img_4.png](img_4.png)
-### Interactive User Interface
-- **Responsive Design**: Intuitive navigation through artist and event search functionalities.
-- **Engaging Feedback System**: Write comments and rate artists while seamlessly viewing aggregated community responses.
-- **Real-Time Updates**: Ratings and comments update dynamically, providing a live experience.
-
-
-### Additional Features
-- **Secure Data Management**: User accounts and interactions are managed securely using modern data storage techniques like Firebase.
-- **Error Handling**: The application gracefully handles invalid inputs and provides informative feedback to the user.
-- **Cross-Platform Compatibility**: Designed to function on various operating systems, ensuring accessibility for all users.
+- **Infinite vertical feed** — full-screen cards, scroll-snap, auto-advances audio
+- **Search** — find any song or artist via Spotify's catalog
+- **30-second audio previews** — auto-play on scroll, loop continuously, tap to pause/resume
+- **Spotify embed** — "Play Full Song" opens the Spotify player for full-length playback
+- **Like, Comment, Share** — reaction bar on every card (likes persisted via Firestore when configured)
+- **Firebase Auth** (optional) — sign in / create account, shown as a non-blocking overlay
+- **Keyboard navigation** — Arrow Up/Down and Space to scroll the feed
+- **Dark, immersive UI** — blurred album art backgrounds, Tailwind CSS
 
 ---
 
-## Installation Instructions
+## Tech Stack
 
-Follow the steps below to install and set up the project on your local machine.
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18, TypeScript, Vite, Tailwind CSS |
+| API | Node.js, Express |
+| Music Data | Spotify Web API (track metadata + art) |
+| Audio Previews | iTunes Search API (free 30s previews, no auth) |
+| Auth (optional) | Firebase Authentication |
+| Likes (optional) | Cloud Firestore |
+
+---
+
+## Project Structure
+
+```
+MusicListing/
+├── web-app/                  # The new feed-first app
+│   ├── src/
+│   │   ├── components/       # Feed, MomentCard, LoginScreen, SignupScreen
+│   │   ├── hooks/            # useAudio (global singleton player), useLikes
+│   │   ├── contexts/         # AuthContext (Firebase auth)
+│   │   ├── lib/              # Firebase config
+│   │   ├── types/            # Moment type definition
+│   │   ├── App.tsx           # Main app shell (header, search, feed, auth modal)
+│   │   └── main.tsx          # Entry point
+│   ├── server/
+│   │   ├── server.js         # Express API — Spotify feed + search + iTunes previews
+│   │   ├── .env              # Spotify credentials (not committed)
+│   │   └── .env.example      # Template for Spotify credentials
+│   ├── package.json
+│   └── vite.config.ts        # Proxies /api → localhost:3001
+├── src/main/java/            # Original Java/Swing app (Clean Architecture)
+├── PRODUCT_VISION.md         # Product direction and UX principles
+└── README.md                 # This file
+```
+
+---
+
+## Quick Start
 
 ### Prerequisites
 
-Before you begin, ensure you have the following installed on your system:
-1. **Java Development Kit (JDK)**: Version 17 or higher is required.
-- Download from [Oracle](https://www.oracle.com/java/technologies/javase-downloads.html) or [OpenJDK](https://openjdk.org/).
-2. **Maven**: For dependency management and project building.
-- Download from [Maven's Official Website](https://maven.apache.org/download.cgi).
-3. **Git**: For cloning the repository.
-- Download from [Git's Official Website](https://git-scm.com/downloads).
-4. **Firebase Admin SDK**: For managing database interactions. Ensure you have access to your Firebase project credentials file (`.json`).
-- Follow the [Firebase Admin Setup Guide](https://firebase.google.com/docs/admin/setup) to generate the credentials file.
+- **Node.js** 18+
+- **Spotify Developer App** — get Client ID and Secret from [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard)
 
-### Steps to Install and Run
+### 1. Install dependencies
 
-1. **Clone the Repository**
 ```bash
-git clone https://github.com/Richard098789/csc207-Group-Project.git
-cd <csc207-Group-Project>
+cd web-app
+npm install
+cd server
+npm install
+cd ..
 ```
 
-2.  **Step 2: Run the Application**
+### 2. Configure Spotify credentials
 
-To run the application, execute the main class located at:
+Create `web-app/server/.env`:
 
-```plaintext
-src/main/java/app/App.java
+```env
+SPOTIFY_CLIENT_ID=your_client_id_here
+SPOTIFY_CLIENT_SECRET=your_client_secret_here
 ```
-## Usage
 
-Once the application is installed and running, you can explore its features to interact with the artist and event data. Below is a step-by-step guide on how to use the application:
+### 3. Run
 
-1. **Sign Up**
-    - Navigate to the **Sign-Up** page.
-    - Enter a unique username and password to create an account.
-    - After successful registration, you will be redirected to the login page.
+```bash
+# Start both API and frontend:
+npm run dev:all
 
-2. **Log In**
-    - Use your credentials to log in to the application.
-    - If you do not have an account, click the **Sign-Up** button to create one.
+# Or separately:
+npm run server    # API on http://localhost:3001
+npm run dev       # Frontend on http://localhost:5173
+```
 
-3. **Main Menu**
-    - After logging in, you will see options to:
-        - **Search for Artists**: View information and interact with artist details.
-        - **Search for Events**: Explore events based on the database.
+Open **http://localhost:5173** — the feed loads with tracks from Spotify. Search for any song. Tap a card to pause/resume. Hit "Play Full Song" for the full track via Spotify.
 
-4. **Artist Search**
-    - Select the **Artist Listing** option from the main menu.
-    - Enter the name of an artist to view their details, including:
-        - Top songs (fetched from the MusicBrainz API).
-        - A comment section where you can leave feedback and ratings for the artist.
-        - Other users' comments and the artist's average rating (stored and updated in the Firebase database).
+---
 
-5. **Event Search**
-    - Navigate to the **Event Listings** option.
-    - Search for events based on location or artist.
-    - View detailed information about the event.
+## How It Works
 
-6. **Submit Comments and Ratings**
-    - On the artist detail page:
-        - Use the **Comments** section to add your thoughts about the artist.
-        - Provide a rating for the artist. The average score will update dynamically.
-        - All data will be stored in the Firebase database.
+1. **Feed** — The API searches Spotify for a mix of popular/trending tracks, returns metadata (title, artist, album art, Spotify URL). For each track missing a Spotify preview, it looks up a 30-second preview from the iTunes Search API.
 
-7. **Logout**
-    - Click the **Logout** button to exit your session safely.
+2. **Search** — Type any query in the header. The API searches Spotify's catalog and returns up to 20 results with iTunes preview fallback.
 
-### Example Walkthrough
+3. **Playback** — A single global `Audio` instance ensures only one song plays at a time. Songs auto-play when you scroll to them, loop continuously, and pause on tap. The Spotify embed iframe gives full-song playback for logged-in Spotify users.
 
-- **Scenario**: You want to rate "The Beatles."
-    - Log in with your account.
-    - Select **Artist Listing**.
-    - Search for "The Beatles."
-    - Add a comment, "Amazing band with timeless music!" and rate them 5 stars.
-    - View the average rating and other users' comments.
+4. **Auth (optional)** — If Firebase is configured (`web-app/.env` with `VITE_FIREBASE_*` vars), users can sign in. Auth is non-blocking — the feed and search work without it. Likes are persisted to Firestore when auth is active.
 
-### Tips
-- Ensure you have a stable internet connection for API and Firebase interactions.
-- If you encounter issues with search results, verify that the artist/event name is spelled correctly.
+---
 
-This user-friendly design ensures that users can seamlessly navigate and enjoy all features of the application.
+## Optional: Firebase Setup
 
-## Clean Architecture Implementation
+For user accounts and persistent likes, add Firebase config to `web-app/.env`:
 
-This project follows **Clean Architecture** principles to ensure scalability, maintainability, and testability. Clean Architecture emphasizes separation of concerns by dividing the project into distinct layers, each with its own responsibility.
+```env
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_STORAGE_BUCKET=...
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...
+```
 
-### Layers of the Project
+Without these, the app works fully — auth and likes are simply disabled.
 
-1. **Entities**
-    - Represent the core business logic and data structures.
-    - Independent of frameworks and libraries, ensuring reusability and testability.
-    - Example: The `User` and `Artist` classes encapsulate core application logic.
+---
 
-2. **Use Cases**
-    - Contain the application's business rules.
-    - Orchestrate the flow of data between the entities and the interface adapters.
-    - Example: Use cases like `LoginInteractor`, `SignupInteractor`, and `ArtistSearchInteractor` handle business logic for their respective features.
+## Original Java App
 
-3. **Interface Adapters**
-    - Adapt the data to and from the use case and the external systems.
-    - Include controllers, presenters, and view models.
-    - Example: `ArtistSearchController` adapts user input to the search use case, and `ArtistSearchPresenter` prepares the data for display.
+The `src/main/java/` directory contains the original **Music Artist and Event Management System** — a Java/Swing desktop app with Clean Architecture (entities, use cases, interface adapters, views). It supports:
 
-4. **Frameworks and Drivers**
-    - External systems like databases, APIs, and user interfaces.
-    - Example: Firebase integration for storing comments and ratings, and the `MusicBrainzAPI` for fetching artist and event data.
+- User signup/login (Firebase)
+- Artist search and detail (MusicBrainz API)
+- Comments and ratings (Firestore)
+- Event search
 
-### Key Principles Followed
+To run: open `src/main/java/app/App.java` in your IDE with JDK 17+ and Maven.
 
-- **Dependency Inversion:** Higher-level modules (use cases) do not depend on lower-level modules (frameworks); instead, they depend on abstractions like interfaces.
-- **Separation of Concerns:** Each layer has a specific purpose, ensuring minimal coupling and high cohesion.
-- **Testability:** The architecture allows for mocking dependencies, making it easier to write and maintain unit tests.
+---
 
-By adhering to Clean Architecture principles, this project is designed to handle future enhancements and modifications with minimal disruption.
+## Team
 
+- **Abhigyan** — GUI Development, API usage, documentation
+- **Richard** — Database, API Search, Clean Architecture design
+- **Nick** — Use Case implementation, architecture design
+- **Chris** — Unit Testing, documentation
+
+---
 
 ## License
 
+MIT License. See [LICENSE](LICENSE) or the badge below.
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-
-Copyright (c) [2024] 
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-##  Feedback and Contribution
-This project was developed by the **CSC207 Software Design Team**:
-- **Abhigyan**: GUI Development, API usage, documentation.
-- **Richard**: Database, API Search, and CLEAN Architecture Design
-- **Nick**: Use Case Implementation and architecture Design
-- **Chris**: Unit Testing and Documentation
-
-We value your feedback and suggestions for improving this project! If you have any ideas, encountered issues, or want to propose enhancements, please feel free to reach out to us using the following link:
-
-[Provide Feedback Here](https://forms.gle/XdyJD7ujGEXQEQvX7)
-
-Thank you for helping us make this project better!
-
-
-
-
-
-
