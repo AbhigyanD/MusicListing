@@ -1,65 +1,62 @@
 package view;
 
-import java.awt.BorderLayout;
-import java.awt.Font;
-
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 
 import data_transfer_object.Event;
-
 
 public class EventDetailView {
     private JFrame frame;
 
     public EventDetailView(Event event) {
+        frame = new JFrame(event.getName() + " — My Music List");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setSize(520, 440);
+        Theme.styleFrame(frame);
+        frame.setLayout(new BorderLayout(0, 0));
 
-        frame = new JFrame("Event Details");
-        frame.setSize(600, 400);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
+        JPanel header = Theme.createHeaderPanel("Event details");
+        frame.add(header, BorderLayout.NORTH);
 
-        // Title
-        JLabel titleLabel = new JLabel("Event Details", JLabel.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        frame.add(titleLabel, BorderLayout.NORTH);
+        JPanel center = new JPanel();
+        center.setBackground(Theme.BACKGROUND);
+        center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
+        center.setBorder(new EmptyBorder(Theme.PAD_LARGE, Theme.PAD_LARGE, Theme.PAD_LARGE, Theme.PAD_LARGE));
 
-        // Event Detail Panel
-        JPanel detailsPanel = new JPanel();
-        detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
-        detailsPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        JPanel card = Theme.createCardPanel();
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
 
-        // Adding information regarding the event
-        detailsPanel.add(new JLabel("<html><b>Name:</b> " + event.getName() + "</html>"));
-        detailsPanel.add(new JLabel("<html><b>Artist:</b> " + event.getArtistName() + "</html>"));
-        detailsPanel.add(new JLabel("<html><b>Type:</b> " + event.getType() + "</html>"));
-        detailsPanel.add(new JLabel("<html><b>Begin Date:</b> " + event.getBeginDate() + "</html>"));
-        detailsPanel.add(new JLabel("<html><b>End Date:</b> " + event.getEndDate() + "</html>"));
-        detailsPanel.add(new JLabel("<html><b>Time:</b> " + event.getTime() + "</html>"));
-        detailsPanel.add(new JLabel("<html><b>Place Name:</b> " + event.getPlaceName() + "</html>"));
-        detailsPanel.add(new JLabel("<html><b>Score:</b> " + event.getScore() + "</html>"));
+        card.add(createRow("Name", event.getName()));
+        card.add(createRow("Artist", event.getArtistName()));
+        card.add(createRow("Type", event.getType()));
+        card.add(createRow("Begin date", event.getBeginDate()));
+        card.add(createRow("End date", event.getEndDate()));
+        card.add(createRow("Time", event.getTime()));
+        card.add(createRow("Place", event.getPlaceName()));
+        card.add(createRow("Score", String.valueOf(event.getScore())));
 
-        frame.add(detailsPanel, BorderLayout.CENTER);
+        center.add(card);
 
-        // Back Button
-        JButton backButton = new JButton("Back");
-        backButton.setFont(new Font("Arial", Font.PLAIN, 16));
-        backButton.addActionListener(e -> {
-            frame.dispose();
-            //new EnhancedListing();
-        });
+        JPanel south = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        south.setBackground(Theme.BACKGROUND);
+        JButton backButton = Theme.secondaryButton("Back");
+        backButton.addActionListener(e -> frame.dispose());
+        south.add(backButton);
+        center.add(Box.createVerticalStrut(Theme.PAD));
+        center.add(south);
 
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.add(backButton);
+        frame.add(center, BorderLayout.CENTER);
 
-        frame.add(buttonPanel, BorderLayout.SOUTH);
-
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-
     }
 
+    private JLabel createRow(String label, String value) {
+        JLabel l = new JLabel("<html><b>" + label + "</b> " + value + "</html>");
+        l.setFont(Theme.FONT_BODY);
+        l.setForeground(Theme.TEXT_PRIMARY);
+        l.setBorder(new EmptyBorder(6, 0, 6, 0));
+        return l;
+    }
 }

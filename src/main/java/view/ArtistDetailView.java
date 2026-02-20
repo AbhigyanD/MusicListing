@@ -6,156 +6,150 @@ import global_storage.CurrentUser;
 import interface_adapter.writer.WriterController;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.util.Map;
 
 public class ArtistDetailView {
     final JFrame frame;
-    private JPanel commentsPanel;  // Keeping reference for updating comments
-    private JScrollPane commentsScrollPane;  // ScrollPane reference for comments
+    private JPanel commentsPanel;
+    private JScrollPane commentsScrollPane;
     private WriterController writeController;
 
     public ArtistDetailView(Recording[] topSongs, Map<String, String> comments,
-                            Artist artist, Double averageRating) {
-        frame = new JFrame("Artist Details");
+                           Artist artist, Double averageRating) {
+        frame = new JFrame(artist.getArtistName() + " — My Music List");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setSize(1000, 800); // Increased size to fit all elements comfortably
-        frame.setLayout(new BorderLayout());
+        frame.setSize(1000, 820);
+        Theme.styleFrame(frame);
+        frame.setLayout(new BorderLayout(0, 0));
 
-        // Title
-        JLabel titleLabel = new JLabel("Artist Details", JLabel.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        frame.add(titleLabel, BorderLayout.NORTH);
+        JPanel header = Theme.createHeaderPanel(artist.getArtistName());
+        frame.add(header, BorderLayout.NORTH);
 
-        // Artist Details Panel
+        JPanel center = new JPanel(new BorderLayout(Theme.GAP, Theme.GAP));
+        center.setBackground(Theme.BACKGROUND);
+        center.setBorder(new EmptyBorder(Theme.PAD, Theme.PAD, Theme.PAD, Theme.PAD));
+
         JPanel detailsPanel = new JPanel();
         detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
-        detailsPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        detailsPanel.setBackground(Theme.CARD_BG);
+        detailsPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Theme.BORDER, 1),
+                new EmptyBorder(Theme.PAD_LARGE, Theme.PAD_LARGE, Theme.PAD_LARGE, Theme.PAD_LARGE)
+        ));
         updateDetailsPanel(detailsPanel, artist, averageRating);
+        center.add(detailsPanel, BorderLayout.CENTER);
 
-        frame.add(detailsPanel, BorderLayout.CENTER);
+        JPanel userInputPanel = createUserInputPanel(artist);
+        center.add(userInputPanel, BorderLayout.SOUTH);
+        frame.add(center, BorderLayout.CENTER);
 
-        // User Input Panel (Rating and Comment)
-        JPanel userInputPanel = createUserInputPanel(detailsPanel, artist);
-        frame.add(userInputPanel, BorderLayout.SOUTH);
-        // Load existing comments
         loadComments(comments);
-
-        // Load songs
         loadSongs(topSongs);
 
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
     private void updateDetailsPanel(JPanel detailsPanel, Artist artist, Double averageRating) {
         detailsPanel.removeAll();
-
-        detailsPanel.add(createDetailLabel("Artist Name: ", artist.getArtistName()));
-        detailsPanel.add(createDetailLabel("ID: ", artist.getId()));
-        detailsPanel.add(createDetailLabel("Country: ", artist.getCountry()));
-        detailsPanel.add(createDetailLabel("Type: ", artist.getType()));
-        detailsPanel.add(createDetailLabel("Average Rating: ", String.valueOf(averageRating)));
-
+        detailsPanel.add(createDetailRow("Artist", artist.getArtistName()));
+        detailsPanel.add(createDetailRow("Country", artist.getCountry()));
+        detailsPanel.add(createDetailRow("Type", artist.getType()));
+        detailsPanel.add(createDetailRow("Average rating", String.valueOf(averageRating)));
         detailsPanel.revalidate();
         detailsPanel.repaint();
     }
 
-    private JPanel createUserInputPanel(JPanel detailsPanel, Artist artist) {
+    private JPanel createUserInputPanel(Artist artist) {
         JPanel userInputPanel = new JPanel();
         userInputPanel.setLayout(new BoxLayout(userInputPanel, BoxLayout.Y_AXIS));
-        userInputPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        userInputPanel.setBackground(Theme.CARD_BG);
+        userInputPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Theme.BORDER, 1),
+                new EmptyBorder(Theme.PAD, Theme.PAD_LARGE, Theme.PAD, Theme.PAD_LARGE)
+        ));
 
-        // Rating Panel
-        JPanel ratingPanel = new JPanel();
-        ratingPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-        JLabel rateLabel = new JLabel("Rate:");
-        rateLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        ratingPanel.add(rateLabel);
-
+        JPanel ratingRow = new JPanel(new FlowLayout(FlowLayout.LEFT, Theme.GAP, 0));
+        ratingRow.setBackground(Theme.CARD_BG);
+        ratingRow.add(Theme.label("Rating", Theme.FONT_BODY));
         JComboBox<Integer> ratingDropdown = new JComboBox<>();
-        for (int i = 0; i <= 10; i++) {
-            ratingDropdown.addItem(i);
-        }
-        ratingPanel.add(ratingDropdown);
-        userInputPanel.add(ratingPanel);
+        for (int i = 0; i <= 10; i++) ratingDropdown.addItem(i);
+        ratingDropdown.setFont(Theme.FONT_BODY);
+        ratingRow.add(ratingDropdown);
+        userInputPanel.add(ratingRow);
 
-        // Comment Panel
-        JLabel commentLabel = new JLabel("Comment:");
-        commentLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        userInputPanel.add(commentLabel);
-
-        JTextArea commentBox = new JTextArea(3, 20);
+        userInputPanel.add(Box.createVerticalStrut(Theme.PAD_SMALL));
+        userInputPanel.add(Theme.label("Comment", Theme.FONT_BODY));
+        JTextArea commentBox = new JTextArea(3, 24);
+        commentBox.setFont(Theme.FONT_INPUT);
         commentBox.setLineWrap(true);
         commentBox.setWrapStyleWord(true);
-        JScrollPane scrollPane = new JScrollPane(commentBox);
-        userInputPanel.add(scrollPane);
+        commentBox.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Theme.BORDER, 1),
+                new EmptyBorder(6, 8, 6, 8)
+        ));
+        JScrollPane commentScroll = new JScrollPane(commentBox);
+        userInputPanel.add(commentScroll);
 
-        // Emoji Button
-        JButton emojiButton = new JButton("Emoji");
-        emojiButton.setFont(new Font("Arial", Font.PLAIN, 16));
+        JPanel buttonRow = new JPanel(new FlowLayout(FlowLayout.LEFT, Theme.GAP, Theme.PAD_SMALL));
+        buttonRow.setBackground(Theme.CARD_BG);
+        JButton emojiButton = Theme.secondaryButton("Insert emoji");
+        JButton addButton = Theme.primaryButton("Add comment");
+        buttonRow.add(emojiButton);
+        buttonRow.add(addButton);
+        userInputPanel.add(buttonRow);
+
         emojiButton.addActionListener(e -> {
-            // Adding emojis
             String[] emojis = {"😀", "😂", "😍", "😢", "👍", "🔥", "💯", "🎶", "😎", "🤘", "❤️", "💔", "👏", "🙏", "🥳", "🤩", "😡", "🎉", "👀", "💥"};
-            String selectedEmoji = (String) JOptionPane.showInputDialog(frame, "Select an emoji:", "Emoji Picker", JOptionPane.PLAIN_MESSAGE, null, emojis, emojis[0]);
-
-            if (selectedEmoji != null) {
-                commentBox.append(selectedEmoji);
-            }
+            String selected = (String) JOptionPane.showInputDialog(frame, "Pick an emoji", "Emoji", JOptionPane.PLAIN_MESSAGE, null, emojis, emojis[0]);
+            if (selected != null) commentBox.append(selected);
         });
-        userInputPanel.add(emojiButton);
 
-        // Add Button
-        JButton addButton = new JButton("Add");
-        addButton.setFont(new Font("Arial", Font.PLAIN, 16));
         addButton.addActionListener(e -> {
-            int rating = (int) ratingDropdown.getSelectedItem();
+            int rating = (Integer) ratingDropdown.getSelectedItem();
             String comment = commentBox.getText().trim();
-
             if (comment.isEmpty()) {
-                JOptionPane.showMessageDialog(frame, "Please add a comment before submitting.", "Error", JOptionPane.ERROR_MESSAGE);
-            } else {
-                writeController.execute(artist.getId(), CurrentUser.username, comment, rating);
-
-                // Dynamically add the new comment to the comments panel
-                JLabel newCommentLabel = new JLabel("<html><b>" + CurrentUser.username + ":</b> " + comment + "</html>");
-                newCommentLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-                commentsPanel.add(newCommentLabel);
-
-                // Refresh the comments panel to display the new comment
-                commentsPanel.revalidate();
-                commentsPanel.repaint();
-
-                // Clear fields
-                ratingDropdown.setSelectedIndex(0);
-                commentBox.setText("");
+                JOptionPane.showMessageDialog(frame, "Please enter a comment.", "Error", JOptionPane.WARNING_MESSAGE);
+                return;
             }
+            writeController.execute(artist.getId(), CurrentUser.username, comment, rating);
+            JLabel newCommentLabel = new JLabel("<html><b>" + CurrentUser.username + ":</b> " + comment + "</html>");
+            newCommentLabel.setFont(Theme.FONT_BODY);
+            newCommentLabel.setBorder(new EmptyBorder(4, 0, 4, 0));
+            commentsPanel.add(newCommentLabel);
+            commentsPanel.revalidate();
+            commentsPanel.repaint();
+            ratingDropdown.setSelectedIndex(0);
+            commentBox.setText("");
         });
-        userInputPanel.add(addButton);
 
         return userInputPanel;
     }
 
     private void loadComments(Map<String, String> comments) {
-        if (commentsPanel != null) {
-            frame.remove(commentsScrollPane);  // Remove the existing scroll pane to refresh
-        }
+        if (commentsPanel != null) frame.remove(commentsScrollPane);
 
         commentsPanel = new JPanel();
         commentsPanel.setLayout(new BoxLayout(commentsPanel, BoxLayout.Y_AXIS));
-        commentsPanel.setBorder(BorderFactory.createTitledBorder("Comments"));
+        commentsPanel.setBackground(Theme.CARD_BG);
+        TitledBorder commentsBorder = BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Theme.BORDER), "Comments", 0, 0, Theme.FONT_SUBTITLE, Theme.TEXT_PRIMARY);
+        commentsPanel.setBorder(BorderFactory.createCompoundBorder(commentsBorder, new EmptyBorder(Theme.PAD_SMALL, Theme.PAD, Theme.PAD, Theme.PAD)));
 
         if (!comments.isEmpty()) {
             for (String key : comments.keySet()) {
-                String text = comments.get(key);
-                JLabel commentLabelItem = new JLabel("<html><b>" + key + ":</b> " + text + "</html>");
-                commentLabelItem.setFont(new Font("Arial", Font.PLAIN, 14));
-                commentsPanel.add(commentLabelItem);
+                JLabel item = new JLabel("<html><b>" + key + ":</b> " + comments.get(key) + "</html>");
+                item.setFont(Theme.FONT_BODY);
+                item.setBorder(new EmptyBorder(4, 0, 4, 0));
+                commentsPanel.add(item);
             }
         }
         commentsScrollPane = new JScrollPane(commentsPanel);
-        commentsScrollPane.setPreferredSize(new Dimension(400, 250)); // Adjusted the size to fit more comments
-
+        commentsScrollPane.setPreferredSize(new Dimension(320, 260));
+        commentsScrollPane.getViewport().setBackground(Theme.CARD_BG);
         frame.add(commentsScrollPane, BorderLayout.EAST);
         frame.revalidate();
         frame.repaint();
@@ -164,39 +158,42 @@ public class ArtistDetailView {
     private void loadSongs(Recording[] topSongs) {
         JPanel songsPanel = new JPanel();
         songsPanel.setLayout(new BoxLayout(songsPanel, BoxLayout.Y_AXIS));
-        songsPanel.setBorder(BorderFactory.createTitledBorder("Top Songs"));
-
+        songsPanel.setBackground(Theme.CARD_BG);
+        TitledBorder songsBorder = BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Theme.BORDER), "Top songs", 0, 0, Theme.FONT_SUBTITLE, Theme.TEXT_PRIMARY);
+        songsPanel.setBorder(BorderFactory.createCompoundBorder(songsBorder, new EmptyBorder(Theme.PAD_SMALL, Theme.PAD, Theme.PAD, Theme.PAD)));
 
         if (topSongs.length == 0) {
-            songsPanel.add(new JLabel("No songs found."));
+            songsPanel.add(Theme.label("No songs found.", Theme.FONT_BODY));
         } else {
             for (Recording song : topSongs) {
-                JLabel songLabel = new JLabel(song.getTitle() + " (" + song.getFormattedLength() + ")");
-                songLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+                JLabel songLabel = Theme.label(song.getTitle() + " · " + song.getFormattedLength(), Theme.FONT_BODY);
+                songLabel.setBorder(new EmptyBorder(4, 0, 4, 0));
                 songsPanel.add(songLabel);
             }
         }
-
         JScrollPane songsScrollPane = new JScrollPane(songsPanel);
-        songsScrollPane.setPreferredSize(new Dimension(400, 250)); // Adjusted the size to fit more songs
-
+        songsScrollPane.setPreferredSize(new Dimension(320, 260));
+        songsScrollPane.getViewport().setBackground(Theme.CARD_BG);
         frame.add(songsScrollPane, BorderLayout.WEST);
         frame.revalidate();
         frame.repaint();
     }
 
-    private JLabel createDetailLabel(String field, String value) {
-        JLabel label = new JLabel("<html><b>" + field + "</b>: " + value + "</html>");
-        label.setFont(new Font("Arial", Font.PLAIN, 16));
-        return label;
+    private JLabel createDetailRow(String field, String value) {
+        JLabel l = new JLabel("<html><b>" + field + "</b> " + value + "</html>");
+        l.setFont(Theme.FONT_BODY);
+        l.setForeground(Theme.TEXT_PRIMARY);
+        l.setBorder(new EmptyBorder(4, 0, 4, 0));
+        return l;
     }
 
     public void commentSuccess(String message) {
-        JOptionPane.showMessageDialog(frame, message, "Success", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(frame, message, "Done", JOptionPane.INFORMATION_MESSAGE);
     }
 
     public void commentFailure(String message) {
-        JOptionPane.showMessageDialog(frame, message, "Failure", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(frame, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     public void setWriterController(WriterController writerController) {

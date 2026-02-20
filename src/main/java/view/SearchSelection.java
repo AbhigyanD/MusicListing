@@ -1,14 +1,14 @@
 package view;
 
 import java.awt.BorderLayout;
-import java.awt.Font;
-import java.awt.GridLayout;
+import java.awt.Component;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 
 import app.AppCoordinator;
 
@@ -17,59 +17,58 @@ public class SearchSelection {
     private final JFrame frame;
 
     public SearchSelection() {
-        frame = new JFrame("Music Listing");
+        frame = new JFrame("Music Listing — My Music List");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(400, 400);
-        frame.setLayout(new BorderLayout());
+        frame.setSize(440, 380);
+        Theme.styleFrame(frame);
+        frame.setLayout(new BorderLayout(0, 0));
 
-        JLabel titleLabel = new JLabel("Select Categories", JLabel.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        frame.add(titleLabel, BorderLayout.NORTH);
+        JPanel header = Theme.createHeaderPanel("Select category");
+        frame.add(header, BorderLayout.NORTH);
 
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(3, 1, 10, 10));
+        JPanel center = new JPanel();
+        center.setBackground(Theme.BACKGROUND);
+        center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
+        center.setBorder(new EmptyBorder(Theme.PAD_LARGE, Theme.PAD_LARGE, Theme.PAD_LARGE, Theme.PAD_LARGE));
 
-        JButton artistButton = new JButton("Artist Listings");
-        JButton eventButton = new JButton("Event Listings");
-        JButton mainMenuButton = new JButton("Main Menu");
+        JPanel card = Theme.createCardPanel();
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
 
-        buttonPanel.add(artistButton);
-        buttonPanel.add(eventButton);
-        buttonPanel.add(mainMenuButton);
+        JButton artistButton = Theme.primaryButton("Artist listings");
+        artistButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JButton eventButton = Theme.secondaryButton("Event listings");
+        eventButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JButton mainMenuButton = Theme.secondaryButton("Main menu");
+        mainMenuButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        frame.add(buttonPanel, BorderLayout.CENTER);
+        card.add(artistButton);
+        card.add(Box.createVerticalStrut(Theme.GAP));
+        card.add(eventButton);
+        card.add(Box.createVerticalStrut(Theme.GAP));
+        card.add(mainMenuButton);
+
+        center.add(card);
+        frame.add(center, BorderLayout.CENTER);
 
         AppCoordinator appCoordinator = AppCoordinator.getInstance();
-
-        // Listings button handlers
         artistButton.addActionListener(e -> {
-            // Close the current frame
             frame.dispose();
-
-            // Open the artist listing view
             appCoordinator.createArtistListingView();
         });
-
         eventButton.addActionListener(e -> {
-            // Close the current frame
             frame.dispose();
-
-            // Open the event listing view
             appCoordinator.createEventListingView();
         });
-
         mainMenuButton.addActionListener(e -> {
-            // Close the current frame
             frame.dispose();
-
-            // Open the main menu page
             appCoordinator.createMainMenuView();
         });
 
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(SearchSelection::new);
+        javax.swing.SwingUtilities.invokeLater(SearchSelection::new);
     }
 }

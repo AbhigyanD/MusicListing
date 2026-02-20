@@ -7,6 +7,7 @@ import interface_adapter.artist_search.ArtistSearchController;
 import interface_adapter.read_from_db.ReadController;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,106 +19,105 @@ public class ArtistListingView {
     private final JTextField searchField;
     private final JTextField countryField;
     private final JComboBox<String> typeDropdown;
-    private int offset = 0; // Start point for pagination
-    private final int LIMIT = 10; // Number of results per request
-    private boolean hasMore = true; // Flag to indicate if there are more results
-    private String searchArtist = ""; // Search filter for artist name
-    private String searchCountry = ""; // Search filter for country
-    private String searchType = ""; // Search filter for type
+    private int offset = 0;
+    private final int LIMIT = 10;
+    private boolean hasMore = true;
+    private String searchArtist = "";
+    private String searchCountry = "";
+    private String searchType = "";
     private ArtistSearchController artistSearchController;
     private ReadController readController;
 
     public ArtistListingView() {
-
-        JFrame frame = new JFrame("Music Listings");
+        JFrame frame = new JFrame("Artist search — My Music List");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 900);
-        frame.setLayout(new BorderLayout());
+        frame.setSize(820, 920);
+        Theme.styleFrame(frame);
+        frame.setLayout(new BorderLayout(0, 0));
 
-        // Title label
-        JLabel titleLabel = new JLabel("Music Listings", JLabel.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        frame.add(titleLabel, BorderLayout.NORTH);
+        JPanel header = Theme.createHeaderPanel("Artist search");
+        frame.add(header, BorderLayout.NORTH);
 
-        // Search bar panel
-        JPanel searchPanel = new JPanel(new FlowLayout());
-        searchField = new JTextField(15);
-        countryField = new JTextField(10);
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, Theme.GAP, Theme.PAD_SMALL));
+        searchPanel.setBackground(Theme.BACKGROUND);
+        searchPanel.setBorder(new EmptyBorder(Theme.PAD_SMALL, Theme.PAD, Theme.PAD_SMALL, Theme.PAD));
 
-        // Dropdown for type
+        searchField = Theme.textField(14);
+        countryField = Theme.textField(8);
         String[] types = {"Any", "Group", "Person", "Other"};
         typeDropdown = new JComboBox<>(types);
+        typeDropdown.setFont(Theme.FONT_BODY);
+        typeDropdown.setBackground(Theme.CARD_BG);
 
-        JButton searchButton = new JButton("Search");
+        JButton searchButton = Theme.primaryButton("Search");
         searchButton.addActionListener(new SearchListener());
 
-        searchPanel.add(new JLabel("Artist:"));
+        searchPanel.add(Theme.label("Artist", Theme.FONT_BODY));
         searchPanel.add(searchField);
-        searchPanel.add(new JLabel("Country:"));
+        searchPanel.add(Theme.label("Country", Theme.FONT_BODY));
         searchPanel.add(countryField);
-        searchPanel.add(new JLabel("Type:"));
-        searchPanel.add(typeDropdown); // Add dropdown to panel
+        searchPanel.add(Theme.label("Type", Theme.FONT_BODY));
+        searchPanel.add(typeDropdown);
         searchPanel.add(searchButton);
         frame.add(searchPanel, BorderLayout.NORTH);
 
-        // Main panel to hold all listings
         listingPanel = new JPanel();
         listingPanel.setLayout(new BoxLayout(listingPanel, BoxLayout.Y_AXIS));
-        listingPanel.setBackground(Color.WHITE);
+        listingPanel.setBackground(Theme.BACKGROUND);
+        listingPanel.setBorder(new EmptyBorder(Theme.PAD_SMALL, Theme.PAD, Theme.PAD_SMALL, Theme.PAD));
 
-        // Scroll pane for the listing panel
-        JScrollPane scrollPane = new JScrollPane(listingPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16); // Smooth scrolling
+        JScrollPane scrollPane = new JScrollPane(listingPanel,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.getViewport().setBackground(Theme.BACKGROUND);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
         frame.add(scrollPane, BorderLayout.CENTER);
 
-        // Load More Button
-        loadMoreButton = new JButton("Load More");
-        loadMoreButton.setFont(new Font("Arial", Font.PLAIN, 16));
+        JPanel southPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        southPanel.setBackground(Theme.BACKGROUND);
+        southPanel.setBorder(new EmptyBorder(Theme.PAD_SMALL, 0, Theme.PAD, 0));
+        loadMoreButton = Theme.secondaryButton("Load more");
         loadMoreButton.addActionListener(new LoadMoreListener());
-        frame.add(loadMoreButton, BorderLayout.SOUTH);
+        southPanel.add(loadMoreButton);
+        frame.add(southPanel, BorderLayout.SOUTH);
 
-        // Fetch and display the first set of results
-        // fetchAndDisplayListings();
-
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
     private JPanel createArtistPanel(Artist artist) {
         JPanel artistPanel = new JPanel();
         artistPanel.setLayout(new BorderLayout());
-        artistPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-        artistPanel.setMaximumSize(new Dimension(750, 120));
-        artistPanel.setBackground(new Color(240, 248, 255)); // Light blue background for the artist panel
+        artistPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Theme.BORDER, 1),
+                new EmptyBorder(Theme.PAD_SMALL, Theme.PAD, Theme.PAD_SMALL, Theme.PAD)
+        ));
+        artistPanel.setMaximumSize(new Dimension(780, 110));
+        artistPanel.setBackground(Theme.LIST_ITEM_BG);
 
-        // Artist name label
-        JLabel nameLabel = new JLabel("<html><b>Artist:</b> " + artist.getArtistName() + "</html>");
-        nameLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        nameLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JLabel nameLabel = new JLabel("<html><b>" + artist.getArtistName() + "</b></html>");
+        nameLabel.setFont(Theme.FONT_SUBTITLE);
+        nameLabel.setForeground(Theme.TEXT_PRIMARY);
+        nameLabel.setBorder(new EmptyBorder(0, 0, 4, 0));
         artistPanel.add(nameLabel, BorderLayout.NORTH);
 
-        // Additional info label
-        JLabel additionalInfoLabel = new JLabel("<html><b>Type:</b> " + artist.getType() +
-                " | <b>Country:</b> " + artist.getCountry() +
-                " | <b>Score:</b> " + artist.getScore() + "</html>");
-        additionalInfoLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        additionalInfoLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        artistPanel.add(additionalInfoLabel, BorderLayout.CENTER);
+        JLabel metaLabel = new JLabel("<html>Type: " + artist.getType() + " · Country: " + artist.getCountry() + " · Score: " + artist.getScore() + "</html>");
+        metaLabel.setFont(Theme.FONT_SMALL);
+        metaLabel.setForeground(Theme.TEXT_SECONDARY);
+        artistPanel.add(metaLabel, BorderLayout.CENTER);
 
-        // Add MouseListener to detect clicks
         artistPanel.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 readController.execute(artist.getId(), artist);
             }
-
             @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                artistPanel.setBackground(new Color(200, 220, 240)); // Slightly darker blue
+                artistPanel.setBackground(Theme.LIST_ITEM_HOVER);
             }
-
             @Override
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                artistPanel.setBackground(new Color(240, 248, 255)); // Reset to the original color
+                artistPanel.setBackground(Theme.LIST_ITEM_BG);
             }
         });
 
@@ -127,35 +127,30 @@ public class ArtistListingView {
     public void presentResults(Artist[] artists) {
         try {
             if (artists.length == 0 && offset == 0) {
-                JLabel noDataLabel = new JLabel("No artists found!");
-                noDataLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+                JLabel noDataLabel = Theme.label("No artists found. Try different search terms.", Theme.FONT_BODY);
+                noDataLabel.setBorder(new EmptyBorder(Theme.PAD, 0, Theme.PAD, 0));
                 listingPanel.add(noDataLabel);
                 hasMore = false;
                 loadMoreButton.setEnabled(false);
             } else {
-                // Display paginated results
                 for (Artist artist : artists) {
-                    // Filter by type if specified
                     if (searchType.equals("Any") || artist.getType().equalsIgnoreCase(searchType)) {
                         listingPanel.add(createArtistPanel(artist));
+                        listingPanel.add(Box.createVerticalStrut(8));
                     }
                 }
-
                 offset += LIMIT;
-
-                // Refresh UI components
                 listingPanel.revalidate();
                 listingPanel.repaint();
-
                 if (artists.length < LIMIT) {
                     hasMore = false;
-                    loadMoreButton.setText("No More Results");
+                    loadMoreButton.setText("No more results");
                     loadMoreButton.setEnabled(false);
                 }
             }
         } catch (Exception e) {
-            JLabel errorLabel = new JLabel("Error fetching artists: " + e.getMessage());
-            errorLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+            JLabel errorLabel = Theme.label("Error: " + e.getMessage(), Theme.FONT_BODY);
+            errorLabel.setForeground(Theme.ERROR);
             listingPanel.add(errorLabel);
             listingPanel.revalidate();
             listingPanel.repaint();
@@ -174,19 +169,14 @@ public class ArtistListingView {
     private class SearchListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            // Get search criteria
             searchArtist = searchField.getText().trim();
             searchCountry = countryField.getText().trim();
             searchType = (String) typeDropdown.getSelectedItem();
-
-            // Reset state for new search
             offset = 0;
             hasMore = true;
             listingPanel.removeAll();
-            loadMoreButton.setText("Load More");
+            loadMoreButton.setText("Load more");
             loadMoreButton.setEnabled(true);
-
-            // Fetch and display results
             artistSearchController.searchArtists(searchArtist, searchCountry, LIMIT, offset);
         }
     }
@@ -200,8 +190,8 @@ public class ArtistListingView {
     }
 
     public void createArtistDetailView(Recording[] topSongs,
-                                       Map<String, String> comments, Artist artist,
-                                       Double averageRating) {
+                                      Map<String, String> comments, Artist artist,
+                                      Double averageRating) {
         AppCoordinator appCoordinator = AppCoordinator.getInstance();
         appCoordinator.createArtistDetailView(topSongs, comments, artist, averageRating);
     }

@@ -1,5 +1,17 @@
 # Music Artist and Event Management System
 
+## New product: Feed-first music discovery (TikTok-style)
+
+A **new UI/product** lives in **`web-app/`**: a vertical, full-screen feed of “music moments” (one song/moment per swipe), built with **React, TypeScript, and Vite**. It’s designed to feel like Vine → YouTube → TikTok, but **music-first**: no search bar, feed is the product, and it **plays music** when you connect audio URLs.
+
+- **Run the new app:** `cd web-app && npm install && npm run dev` → [http://localhost:5173](http://localhost:5173)
+- **Product and tech direction:** see [**PRODUCT_VISION.md**](PRODUCT_VISION.md)
+- **Tech:** React 18, TypeScript, Vite, Tailwind. Optional backend: keep Java (e.g. Spring Boot) or add Node/Go; web app consumes a “moments” API.
+
+The rest of this README describes the **original** Java/Swing system (artist search, events, comments, Firebase).
+
+---
+
 ## Overview
 
 The **Music Artist and Event Management System** is a Java-based software project designed to manage music artist information, events, and user interactions. It incorporates clean architecture, follows SOLID design principles, and integrates real-time data from external APIs. This project provides a robust framework for managing artist-related data and event search while ensuring user-centric functionality.

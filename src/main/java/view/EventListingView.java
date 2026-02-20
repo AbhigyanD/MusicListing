@@ -4,6 +4,7 @@ import data_transfer_object.Event;
 import interface_adapter.event_search.EventSearchController;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,57 +16,60 @@ public class EventListingView {
     private final JButton loadMoreButton;
     private final JTextField searchField;
     private final JTextField locationField;
-    private int offset = 0; // Start point for pagination
-    private final int LIMIT = 10; // Number of results per request
-    private boolean hasMore = true; // Flag to indicate if there are more results
-    private String searchEvent = ""; // Search filter for event names
-    private String searchLocation = ""; // Search filter for location names
+    private int offset = 0;
+    private final int LIMIT = 10;
+    private boolean hasMore = true;
+    private String searchEvent = "";
+    private String searchLocation = "";
     private EventSearchController eventSearchController;
 
     public EventListingView() {
-        frame = new JFrame("Event Listing");
+        frame = new JFrame("Event search — My Music List");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 900);
-        frame.setLayout(new BorderLayout());
+        frame.setSize(820, 920);
+        Theme.styleFrame(frame);
+        frame.setLayout(new BorderLayout(0, 0));
 
-        // Title Label
-        JLabel titleLabel = new JLabel("Event Listing", JLabel.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        frame.add(titleLabel, BorderLayout.NORTH);
+        JPanel header = Theme.createHeaderPanel("Event search");
+        frame.add(header, BorderLayout.NORTH);
 
-        // Search Panel
-        JPanel searchPanel = new JPanel(new FlowLayout());
-        searchField = new JTextField(15);
-        locationField = new JTextField(10);
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, Theme.GAP, Theme.PAD_SMALL));
+        searchPanel.setBackground(Theme.BACKGROUND);
+        searchPanel.setBorder(new EmptyBorder(Theme.PAD_SMALL, Theme.PAD, Theme.PAD_SMALL, Theme.PAD));
 
-        JButton searchButton = new JButton("Search");
+        searchField = Theme.textField(14);
+        locationField = Theme.textField(10);
+        JButton searchButton = Theme.primaryButton("Search");
         searchButton.addActionListener(new SearchListener());
 
-        searchPanel.add(new JLabel("Event:"));
+        searchPanel.add(Theme.label("Event", Theme.FONT_BODY));
         searchPanel.add(searchField);
-        searchPanel.add(new JLabel("Location:"));
+        searchPanel.add(Theme.label("Location", Theme.FONT_BODY));
         searchPanel.add(locationField);
         searchPanel.add(searchButton);
-
         frame.add(searchPanel, BorderLayout.NORTH);
 
-        // Main Panel for Listings
         listingPanel = new JPanel();
         listingPanel.setLayout(new BoxLayout(listingPanel, BoxLayout.Y_AXIS));
-        listingPanel.setBackground(Color.WHITE);
+        listingPanel.setBackground(Theme.BACKGROUND);
+        listingPanel.setBorder(new EmptyBorder(Theme.PAD_SMALL, Theme.PAD, Theme.PAD_SMALL, Theme.PAD));
 
-        // Scroll Pane
-        JScrollPane scrollPane = new JScrollPane(listingPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        JScrollPane scrollPane = new JScrollPane(listingPanel,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.getViewport().setBackground(Theme.BACKGROUND);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
         frame.add(scrollPane, BorderLayout.CENTER);
 
-        // Load More Button
-        loadMoreButton = new JButton("Load More");
-        loadMoreButton.setFont(new Font("Arial", Font.PLAIN, 16));
+        JPanel southPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        southPanel.setBackground(Theme.BACKGROUND);
+        southPanel.setBorder(new EmptyBorder(Theme.PAD_SMALL, 0, Theme.PAD, 0));
+        loadMoreButton = Theme.secondaryButton("Load more");
         loadMoreButton.addActionListener(new LoadMoreListener());
-        frame.add(loadMoreButton, BorderLayout.SOUTH);
+        southPanel.add(loadMoreButton);
+        frame.add(southPanel, BorderLayout.SOUTH);
 
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
@@ -75,25 +79,22 @@ public class EventListingView {
 
     public void presentResults(Event[] events) {
         if (events.length == 0 && offset == 0) {
-            JLabel noDataLabel = new JLabel("No events found!");
-            noDataLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+            JLabel noDataLabel = Theme.label("No events found. Try different search terms.", Theme.FONT_BODY);
+            noDataLabel.setBorder(new EmptyBorder(Theme.PAD, 0, Theme.PAD, 0));
             listingPanel.add(noDataLabel);
             hasMore = false;
             loadMoreButton.setEnabled(false);
         } else {
-            // Display events
             Arrays.stream(events).forEach(event -> {
                 listingPanel.add(createEventPanel(event));
+                listingPanel.add(Box.createVerticalStrut(8));
             });
-
             offset += LIMIT;
-
             listingPanel.revalidate();
             listingPanel.repaint();
-
             if (events.length < LIMIT) {
                 hasMore = false;
-                loadMoreButton.setText("No More Results");
+                loadMoreButton.setText("No more results");
                 loadMoreButton.setEnabled(false);
             }
         }
@@ -102,48 +103,39 @@ public class EventListingView {
     private JPanel createEventPanel(Event event) {
         JPanel eventPanel = new JPanel();
         eventPanel.setLayout(new BoxLayout(eventPanel, BoxLayout.Y_AXIS));
-        eventPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-        eventPanel.setMaximumSize(new Dimension(750, 120));
-        eventPanel.setBackground(new Color(240, 248, 255)); // Light blue background
+        eventPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Theme.BORDER, 1),
+                new EmptyBorder(Theme.PAD_SMALL, Theme.PAD, Theme.PAD_SMALL, Theme.PAD)
+        ));
+        eventPanel.setMaximumSize(new Dimension(780, 130));
+        eventPanel.setBackground(Theme.LIST_ITEM_BG);
 
-        // Event Name
-        JLabel nameLabel = new JLabel("<html><b>Event:</b> " + event.getName() + "</html>");
-        nameLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        nameLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JLabel nameLabel = new JLabel("<html><b>" + event.getName() + "</b></html>");
+        nameLabel.setFont(Theme.FONT_SUBTITLE);
+        nameLabel.setForeground(Theme.TEXT_PRIMARY);
+        nameLabel.setBorder(new EmptyBorder(0, 0, 4, 0));
         eventPanel.add(nameLabel);
 
-        // Additional Info
-        JLabel additionalInfoLabel = new JLabel("<html><b>Type:</b> " + event.getType() +
-                " | <b>Artist:</b> " + event.getArtistName() +
-                " | <b>Location:</b> " + event.getPlaceName() + "</html>");
-        additionalInfoLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        additionalInfoLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        eventPanel.add(additionalInfoLabel);
+        JLabel info1 = new JLabel("<html>Type: " + event.getType() + " · Artist: " + event.getArtistName() + " · " + event.getPlaceName() + "</html>");
+        info1.setFont(Theme.FONT_SMALL);
+        info1.setForeground(Theme.TEXT_SECONDARY);
+        info1.setBorder(new EmptyBorder(0, 0, 2, 0));
+        eventPanel.add(info1);
 
-        JLabel additionalInfoLabel1 = new JLabel("<html><b>Begin Date:</b> " + event.getBeginDate() +
-                " | <b>End Date:</b> " + event.getEndDate() +
-                " | <b>Score:</b> " + event.getScore() + "</html>");
-        additionalInfoLabel1.setFont(new Font("Arial", Font.PLAIN, 16));
-        additionalInfoLabel1.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        eventPanel.add(additionalInfoLabel1);
+        JLabel info2 = new JLabel("<html>Begin: " + event.getBeginDate() + " · End: " + event.getEndDate() + " · Score: " + event.getScore() + "</html>");
+        info2.setFont(Theme.FONT_SMALL);
+        info2.setForeground(Theme.TEXT_SECONDARY);
+        eventPanel.add(info2);
 
         eventPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        // Mouse Listener for Clicks
         eventPanel.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                // Handle event click, e.g., open event detail view
-            }
-
-            @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                eventPanel.setBackground(new Color(200, 220, 240));
+                eventPanel.setBackground(Theme.LIST_ITEM_HOVER);
             }
-
             @Override
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                eventPanel.setBackground(new Color(240, 248, 255));
+                eventPanel.setBackground(Theme.LIST_ITEM_BG);
             }
         });
 
@@ -153,9 +145,7 @@ public class EventListingView {
     private class LoadMoreListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (hasMore) {
-                fetchAndDisplayListings();
-            }
+            if (hasMore) fetchAndDisplayListings();
         }
     }
 
@@ -164,15 +154,11 @@ public class EventListingView {
         public void actionPerformed(ActionEvent e) {
             searchEvent = searchField.getText().trim();
             searchLocation = locationField.getText().trim();
-
-            // Reset state for new search
             offset = 0;
             hasMore = true;
             listingPanel.removeAll();
-            loadMoreButton.setText("Load More");
+            loadMoreButton.setText("Load more");
             loadMoreButton.setEnabled(true);
-
-            // Fetch and display results
             fetchAndDisplayListings();
         }
     }
@@ -182,7 +168,6 @@ public class EventListingView {
             JOptionPane.showMessageDialog(frame, "Search controller not set.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
         eventSearchController.searchEvents(searchEvent, searchLocation, LIMIT, offset);
     }
 }

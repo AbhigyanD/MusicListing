@@ -30,3 +30,9 @@ bin/
 
 .idea 
 .target
+
+### Web app (Vite/React)
+web-app/node_modules/
+web-app/dist/
+web-app/.env
+web-app/server/.env

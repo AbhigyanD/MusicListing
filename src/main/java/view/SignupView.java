@@ -4,6 +4,7 @@ import app.AppCoordinator;
 import interface_adapter.signup.SignupController;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class SignupView {
@@ -11,52 +12,80 @@ public class SignupView {
     private final JFrame frame;
 
     public SignupView() {
-        frame = new JFrame("Sign-Up Page");
+        frame = new JFrame("Create account — My Music List");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(400, 300);
+        frame.setSize(420, 460);
+        Theme.styleFrame(frame);
+        frame.setLayout(new BorderLayout(0, 0));
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(4, 2, 10, 10));
+        JPanel header = Theme.createHeaderPanel("Create account");
+        frame.add(header, BorderLayout.NORTH);
 
-        panel.add(new JLabel("Username:"));
-        JTextField usernameField = new JTextField();
-        panel.add(usernameField);
+        JPanel center = new JPanel();
+        center.setBackground(Theme.BACKGROUND);
+        center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
+        center.setBorder(new EmptyBorder(Theme.PAD_LARGE, Theme.PAD_LARGE, Theme.PAD_LARGE, Theme.PAD_LARGE));
 
-        panel.add(new JLabel("Password:"));
-        JPasswordField passwordField = new JPasswordField();
-        panel.add(passwordField);
+        JPanel card = Theme.createCardPanel();
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
 
-        panel.add(new JLabel("Confirm Password:"));
-        JPasswordField confirmPasswordField = new JPasswordField();
-        panel.add(confirmPasswordField);
+        JLabel userLabel = Theme.label("Username", Theme.FONT_BODY);
+        userLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        card.add(userLabel);
+        card.add(Box.createVerticalStrut(6));
+        JTextField usernameField = Theme.textField(20);
+        usernameField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        card.add(usernameField);
+        card.add(Box.createVerticalStrut(Theme.GAP));
 
-        JButton createAccountButton = new JButton("Create Account");
-        JButton backButton = new JButton("Back to Login");
-        panel.add(createAccountButton);
-        panel.add(backButton);
+        JLabel passLabel = Theme.label("Password", Theme.FONT_BODY);
+        passLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        card.add(passLabel);
+        card.add(Box.createVerticalStrut(6));
+        JPasswordField passwordField = Theme.passwordField(20);
+        passwordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        card.add(passwordField);
+        card.add(Box.createVerticalStrut(Theme.GAP));
 
-        frame.add(panel, BorderLayout.CENTER);
+        JLabel confirmLabel = Theme.label("Confirm password", Theme.FONT_BODY);
+        confirmLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        card.add(confirmLabel);
+        card.add(Box.createVerticalStrut(6));
+        JPasswordField confirmPasswordField = Theme.passwordField(20);
+        confirmPasswordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        card.add(confirmPasswordField);
+        card.add(Box.createVerticalStrut(Theme.PAD));
 
-        frame.setVisible(true);
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER, Theme.GAP, 0));
+        buttons.setBackground(Theme.CARD_BG);
+        JButton createAccountButton = Theme.primaryButton("Create account");
+        JButton backButton = Theme.secondaryButton("Back to sign in");
+        buttons.add(createAccountButton);
+        buttons.add(backButton);
+        card.add(buttons);
 
-        // Create Account Button ActionListener
+        center.add(card);
+        frame.add(center, BorderLayout.CENTER);
+
         createAccountButton.addActionListener(e -> {
-            String username = usernameField.getText();
+            String username = usernameField.getText().trim();
             String password = new String(passwordField.getPassword());
             String confirmPassword = new String(confirmPasswordField.getPassword());
-
             signupController.execute(username, password, confirmPassword);
-
         });
 
-        // Back Button ActionListener
         backButton.addActionListener(e -> {
-            frame.dispose(); // Close the sign-up window
-            signupController.switchToLoginView(); // Return to LoginView
+            frame.dispose();
+            signupController.switchToLoginView();
         });
+
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
 
-    public void setSignupController(SignupController signupController) {this.signupController = signupController;}
+    public void setSignupController(SignupController signupController) {
+        this.signupController = signupController;
+    }
 
     public void goLoginView() {
         AppCoordinator appCoordinator = AppCoordinator.getInstance();
@@ -64,16 +93,17 @@ public class SignupView {
     }
 
     public void signupSuccess() {
-        JOptionPane.showMessageDialog(frame, "Account created successfully!");
+        JOptionPane.showMessageDialog(frame, "Account created. You can sign in now.");
+        frame.dispose();
         AppCoordinator appCoordinator = AppCoordinator.getInstance();
         appCoordinator.createLoginView();
     }
 
     public void signupFailure() {
-        JOptionPane.showMessageDialog(frame, "User already exists.");
+        JOptionPane.showMessageDialog(frame, "That username is already taken.", "Sign up failed", JOptionPane.WARNING_MESSAGE);
     }
 
     public void passwordUnmatched() {
-        JOptionPane.showMessageDialog(frame, "Password is unmatched");
+        JOptionPane.showMessageDialog(frame, "Passwords do not match.", "Try again", JOptionPane.WARNING_MESSAGE);
     }
 }

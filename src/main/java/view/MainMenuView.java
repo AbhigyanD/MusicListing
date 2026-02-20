@@ -3,6 +3,7 @@ package view;
 import app.AppCoordinator;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class MainMenuView {
@@ -12,39 +13,55 @@ public class MainMenuView {
     }
 
     private void createAndShowGUI() {
-        JFrame frame = new JFrame("Main Menu");
+        JFrame frame = new JFrame("My Music List");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(400, 300);
+        frame.setSize(440, 380);
+        Theme.styleFrame(frame);
+        frame.setLayout(new BorderLayout(0, 0));
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(3, 1, 10, 10));
+        JPanel header = Theme.createHeaderPanel("Main menu");
+        frame.add(header, BorderLayout.NORTH);
 
-        JButton musicListingsButton = new JButton("Music Listings");
-        JButton accountButton = new JButton("My Account");
-        JButton logoutButton = new JButton("Log Out");
+        JPanel center = new JPanel();
+        center.setBackground(Theme.BACKGROUND);
+        center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
+        center.setBorder(new EmptyBorder(Theme.PAD_LARGE, Theme.PAD_LARGE, Theme.PAD_LARGE, Theme.PAD_LARGE));
 
-        panel.add(musicListingsButton);
-        panel.add(accountButton);
-        panel.add(logoutButton);
+        JPanel card = Theme.createCardPanel();
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
 
-        frame.add(panel, BorderLayout.CENTER);
+        JButton musicListingsButton = Theme.primaryButton("Music Listings");
+        musicListingsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JButton accountButton = Theme.secondaryButton("My Account");
+        accountButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JButton logoutButton = Theme.secondaryButton("Log out");
+
+        logoutButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        card.add(musicListingsButton);
+        card.add(Box.createVerticalStrut(Theme.GAP));
+        card.add(accountButton);
+        card.add(Box.createVerticalStrut(Theme.GAP));
+        card.add(logoutButton);
+
+        center.add(card);
+        frame.add(center, BorderLayout.CENTER);
+
         AppCoordinator appCoordinator = AppCoordinator.getInstance();
-        // Music Listings button action
         musicListingsButton.addActionListener(e -> {
-            frame.dispose(); // Close the main menu window
+            frame.dispose();
             appCoordinator.createSearchSelectionView();
         });
-
-        // Log Out button action
         logoutButton.addActionListener(e -> {
-            frame.dispose(); // Close the main menu
-            appCoordinator.createLoginView(); // Go back to the login view
+            frame.dispose();
+            appCoordinator.createLoginView();
         });
-
         accountButton.addActionListener(e -> appCoordinator.createUserAccountView());
 
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
+
     public static void main(String[] args) {
         new MainMenuView();
     }
